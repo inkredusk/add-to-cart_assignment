@@ -1,0 +1,1 @@
+SELECT SUM(p.price * c.quantity) AS total_price FROM cart c join product p on c.product_id=p.id;
