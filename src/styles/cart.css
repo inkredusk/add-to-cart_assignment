@@ -116,3 +116,28 @@
     outline: none;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
 }
+
+
+/* cart.css */
+.proceed {
+    margin-top: 29px;
+    padding: 10px 20px;
+    background-color: rgb(235, 159, 20);
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 713px;
+    font-size: 30px;
+    border-radius: 14px;
+    margin-bottom: 30px;
+  }
+  
+  .proceed:disabled {
+    background-color: #A5A5A5;
+  }
+  
+  .error-message {
+    color: red;
+    margin-top: 10px;
+  }
+  

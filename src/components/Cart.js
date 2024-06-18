@@ -1,15 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../styles/cart.css';
 import Modal from './Modal';
-import { getTotalPrice, getAllCartItems } from '../api/endpoints'; // Import the existing API endpoints
 
-const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowModal, modalMessage, setModalMessage }) => {
+const Cart = ({ cart, setCart, handleChange, handleRemove, totalPrice, showModal, setShowModal, modalMessage, setModalMessage }) => {
   const [selectedItems, setSelectedItems] = useState(new Set(cart.map(item => item.id)));
-  const [selectedTotalPrice, setSelectedTotalPrice] = useState(0);
-
-  useEffect(() => {
-    fetchSelectedTotalPrice();
-  }, [selectedItems, cart]);
 
   const toggleSelectItem = (id) => {
     setSelectedItems(prev => {
@@ -28,22 +22,6 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
       setSelectedItems(new Set());
     } else {
       setSelectedItems(new Set(cart.map(item => item.id)));
-    }
-  };
-
-  const fetchSelectedTotalPrice = async () => {
-    try {
-      // Get the total price of all items
-      const total = await getTotalPrice();
-      
-      // Filter cart items based on selectedItems and calculate the price of selected items
-      const selectedTotal = cart
-        .filter(item => selectedItems.has(item.id))
-        .reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-        
-      setSelectedTotalPrice(selectedTotal);
-    } catch (error) {
-      console.error('Error fetching selected total price:', error);
     }
   };
 
@@ -89,8 +67,8 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
         </div>
       ))}
       <div className='total'>
-        <span>Total price of selected items</span>
-        <span className='total_price'>₹ {selectedTotalPrice}</span>
+        <span>Total price of your cart</span>
+        <span className='total_price'>₹ {totalPrice}</span> {/* Use totalPrice prop */}
       </div>
       <button className="proceed" onClick={handleProceed}>
         Proceed
@@ -101,3 +79,4 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
 };
 
 export default Cart;
+
