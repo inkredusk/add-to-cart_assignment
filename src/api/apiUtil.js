@@ -20,15 +20,21 @@ const getHeaders = () => {
   return headers;
 };
 
-export const genericApiCall = async (method, endpoint, data, params) => {
+export const genericApiCall = async (method, endpoint, data = null, params = null) => {
   try {
-    const response = await api({
+    const config = {
       method: method,
       url: endpoint,
-      data: data,
-      params: params,
-      headers: getHeaders(),  // Use the getHeaders function here
-    });
+      headers: getHeaders(),
+    };
+
+    if (method.toLowerCase() === 'get' && params) {
+      config.params = params;
+    } else if (method.toLowerCase() === 'post' && data) {
+      config.data = data;
+    }
+
+    const response = await api(config);
     return response.data;
   } catch (error) {
     console.error('API Error:', error.response ? error.response.data : error.message);
