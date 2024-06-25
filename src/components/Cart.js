@@ -80,7 +80,7 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
                 <button className="q_btn" onClick={() => handleChange(item, +1)}> + </button>
                 <button className="q_btn">{item.quantity}</button>
                 <button className="q_btn" onClick={() => handleChange(item, -1)}> - </button>
-                <button className="delete" onClick={() => handleRemove(item.id)}>Delete</button>
+                <button className="delete" onClick={() => handleRemove(item.id)}><i className='fa fa-trash' style={{ color: 'black' }}></i></button>
                 <span>₹{item.product.price}</span>
               </div>
             </div>
