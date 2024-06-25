@@ -1,60 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
 import Amazon from './components/Amazon';
 import Cart from './components/Cart';
-import './styles/amazon.css';
-import list from './Data.js'; // Assuming your product list is in 'data.js'
+import Navbar from './components/Navbar';
+import './App.css';
+import { addToCart, getAllCartItems, getTotalPrice, getTotalQuantity, updateCartQuantity, removeFromCart } from './api/endpoints';
 
 function App() {
   const [show, setShow] = useState(true);
   const [cart, setCart] = useState([]);
-  const [warning, setWarning] = useState('');
   const [totalQuantity, setTotalQuantity] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   useEffect(() => {
-    const total = cart.reduce((acc, item) => acc + item.amount, 0);
-    setTotalQuantity(total);
-  }, [cart]);
-
-  const handleClick = (item) => {
-    const existingItem = cart.find(product => product.id === item.id);
-    if (existingItem) {
-      if (existingItem.amount >= item.quantity) {
-        setWarning('Item is out of stock');
-        setTimeout(() => setWarning(''), 2000);
-        return;
-      } else {
-        setCart(cart.map(product =>
-          product.id === item.id ? { ...product, amount: product.amount + 1 } : product
-        ));
+    const fetchCartData = async () => {
+      try {
+        const cartItems = await getAllCartItems();
+        setCart(cartItems);
+        setTotalQuantity(await getTotalQuantity());
+        setTotalPrice(await getTotalPrice());
+      } catch (error) {
+        console.error('Error fetching cart items:', error);
       }
-    } else {
-      setCart([...cart, { ...item, amount: 1 }]); // Set initial amount to 1
-    }
-  }
+    };
 
-  const handleChange = (item, delta) => {
-    const index = cart.findIndex((i) => i.id === item.id);
-    if (index >= 0) {
-      const newCart = [...cart];
-      if (newCart[index].amount + delta > list.find(product => product.id === item.id).quantity) {
-        setWarning('Unavailable stock');
-        setTimeout(() => setWarning(''), 2000);
-        return;
-      } else if (newCart[index].amount + delta <= 0) {
-        newCart.splice(index, 1); // Remove the item if amount is 0 or less
-      } else {
-        newCart[index].amount += delta;
-      }
-      setCart(newCart);
+    fetchCartData();
+  }, []);
+
+  const handleClick = async (item) => {
+    try {
+      await addToCart(item.id);
+      const cartItems = await getAllCartItems();
+      setCart(cartItems);
+      setTotalQuantity(await getTotalQuantity());
+      setTotalPrice(await getTotalPrice());
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      setModalMessage('Error adding item to cart');
+      setShowModal(true);
     }
-  }
+  };
+
+  const handleChange = async (item, delta) => {
+  //  const updatedQuantity = item.quantity + delta;
+    //if (updatedQuantity < 1) return;
+
+    try {
+      await updateCartQuantity(item.id, delta);
+      const cartItems = await getAllCartItems();
+      setCart(cartItems);
+      setTotalQuantity(await getTotalQuantity());
+      setTotalPrice(await getTotalPrice());
+    } catch (error) {
+      console.error('Error updating cart quantity:', error);
+    }
+  };
+
+  const handleRemove = async (id) => {
+    try {
+      await removeFromCart(id);
+      const cartItems = await getAllCartItems();
+      setCart(cartItems);
+      setTotalQuantity(await getTotalQuantity());
+      setTotalPrice(await getTotalPrice());
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
+  };
 
   return (
     <React.Fragment>
       <Navbar size={totalQuantity} setShow={setShow} />
-      {show ? <Amazon handleClick={handleClick} /> : <Cart cart={cart} setCart={setCart} handleChange={handleChange} />}
-      {warning && <div className='warning'>{warning}</div>}
+      {show ? (
+        <Amazon handleClick={handleClick} />
+      ) : (
+        <Cart
+          cart={cart}
+          setCart={setCart}
+          handleChange={handleChange}
+          handleRemove={handleRemove}
+          totalPrice={totalPrice}
+          showModal={showModal}
+          setShowModal={setShowModal}
+          modalMessage={modalMessage}
+          setModalMessage={setModalMessage}
+        />
+      )}
     </React.Fragment>
   );
 }
