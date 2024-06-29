@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import Amazon from './components/Amazon';
 import Cart from './components/Cart';
 import Navbar from './components/Navbar';
+import Modal from './components/Modal';
 import './App.css';
 import { addToCart, getAllCartItems, getTotalPrice, getTotalQuantity, updateCartQuantity, removeFromCart } from './api/endpoints';
 
@@ -29,6 +31,15 @@ function App() {
   }, []);
 
   const handleClick = async (item) => {
+    const cartItem = cart.find(cartItem => cartItem.product.id === item.id);
+    const currentQuantity = cartItem ? cartItem.quantity : 0;
+
+    if (currentQuantity + 1 > item.stock) {
+      setModalMessage('Cannot exceed available stock');
+      setShowModal(true);
+      return;
+    }
+
     try {
       await addToCart(item.id);
       const cartItems = await getAllCartItems();
@@ -43,8 +54,13 @@ function App() {
   };
 
   const handleChange = async (item, delta) => {
-  //  const updatedQuantity = item.quantity + delta;
-    //if (updatedQuantity < 1) return;
+    const updatedQuantity = item.quantity + delta;
+
+    if (updatedQuantity > item.product.stock) {
+      setModalMessage('Cannot exceed available stock');
+      setShowModal(true);
+      return;
+    }
 
     try {
       await updateCartQuantity(item.id, delta);
@@ -73,7 +89,13 @@ function App() {
     <React.Fragment>
       <Navbar size={totalQuantity} setShow={setShow} />
       {show ? (
-        <Amazon handleClick={handleClick} />
+        <Amazon 
+          handleClick={handleClick} 
+          showModal={showModal} 
+          setShowModal={setShowModal} 
+          modalMessage={modalMessage} 
+          setModalMessage={setModalMessage} 
+        />
       ) : (
         <Cart
           cart={cart}
@@ -87,6 +109,7 @@ function App() {
           setModalMessage={setModalMessage}
         />
       )}
+      {showModal && <Modal message={modalMessage} onClose={() => setShowModal(false)} />}
     </React.Fragment>
   );
 }
