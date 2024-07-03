@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/cart.css';
 import Modal from './Modal';
+<<<<<<< Updated upstream
 import { getTotalPrice, getAllCartItems } from '../api/endpoints'; // Import the existing API endpoints
+=======
+import Checkout from './Checkout'; // Import the Checkout component
+import { getTotalPrice, deleteItemById } from '../api/endpoints'; // Import deleteItemById API call
+>>>>>>> Stashed changes
 
 const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowModal, modalMessage, setModalMessage }) => {
   const [selectedItems, setSelectedItems] = useState(new Set(cart.map(item => item.id)));
@@ -9,7 +14,7 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
 
   useEffect(() => {
     fetchSelectedTotalPrice();
-  }, [selectedItems, cart]);
+  }, [selectedItems, cart]); // Only re-run the effect if selectedItems or cart changes
 
   const toggleSelectItem = (id) => {
     setSelectedItems(prev => {
@@ -33,10 +38,13 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
 
   const fetchSelectedTotalPrice = async () => {
     try {
+<<<<<<< Updated upstream
       // Get the total price of all items
       const total = await getTotalPrice();
       
       // Filter cart items based on selectedItems and calculate the price of selected items
+=======
+>>>>>>> Stashed changes
       const selectedTotal = cart
         .filter(item => selectedItems.has(item.id))
         .reduce((sum, item) => sum + item.product.price * item.quantity, 0);
@@ -60,10 +68,24 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
     }
   };
 
+<<<<<<< Updated upstream
+=======
+  if (showCheckout) {
+    return (
+      <Checkout 
+        selectedItems={selectedItems} 
+        cart={cart} 
+        totalPrice={selectedTotalPrice} 
+        onBack={() => setShowCheckout(false)} 
+      />
+    );
+  }
+
+>>>>>>> Stashed changes
   return (
     <article>
       <button className="toggle-select" onClick={toggleSelectAll}>
-        {selectedItems.size === cart.length ? 'Deselect All' : 'Select All'}
+        {cart.length === 0 || selectedItems.size === cart.length ? 'Deselect All' : 'Select All'}
       </button>
       {cart?.map(item => (
         <div className='cart_box' key={item.id}>
@@ -73,7 +95,13 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
               checked={selectedItems.has(item.id)}
               onChange={() => toggleSelectItem(item.id)}
             />
-            <div className='img1'><img src={item.img} alt={item.title} /></div>
+            <div className='img1'>
+              <img 
+                src={`http://localhost:8080/images/${item.product.imageUrl}`} 
+                alt={item.product.name} 
+                onError={(e) => { e.target.onerror = null; e.target.src = 'path/to/default/image.jpg'; }} 
+              />
+            </div>
             <div className='cart_desc'>
               <div className='cart_title'><p>{item.product.name}</p></div>
               <div className='cart_quantity'>

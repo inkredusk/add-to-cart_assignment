@@ -1,8 +1,7 @@
-// productApi
 import { genericApiCall } from './apiUtil';
 
 export const getAllProducts = () => genericApiCall('get', process.env.REACT_APP_GET_ALL_PRODUCTS);
-export const getProductById = (id) => genericApiCall('get', process.env.REACT_APP_GET_PRODUCT_BY_ID);
+export const getProductById = (id) => genericApiCall('get', `${process.env.REACT_APP_GET_PRODUCT_BY_ID}/${id}`);
 export const addProduct = (data) => genericApiCall('post', process.env.REACT_APP_CREATE_PRODUCT, data);
 
 // cartApi
