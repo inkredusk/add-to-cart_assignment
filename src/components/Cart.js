@@ -108,11 +108,15 @@ import '../styles/cart.css';
 import Modal from './Modal';
 import Checkout from './Checkout'; // Import the Checkout component
 import { getTotalPrice, getAllCartItems, deleteItemById } from '../api/endpoints'; // Import deleteItemById API call
+import App from '../App';
+
 
 const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowModal, modalMessage, setModalMessage }) => {
   const [selectedItems, setSelectedItems] = useState(new Set(cart.map(item => item.id)));
   const [selectedTotalPrice, setSelectedTotalPrice] = useState(0);
   const [showCheckout, setShowCheckout] = useState(false); // Add state to manage showing the Checkout component
+  const [showAmazon, setShowAmazon] = useState(false); // Add state to manage showing the Amazon component
+  const [showCart, setShowCart] = useState(false);
 
   useEffect(() => {
     fetchSelectedTotalPrice();
@@ -163,6 +167,19 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
     }
   };
 
+  const goBackToHome = () => {
+    setShowAmazon(true); // Show the Amazon component
+  };
+
+  if (showAmazon) {
+    return <App />;
+  }
+
+  const goBackToCart = () => {
+    setShowCheckout(false); // Show the Amazon component
+  };
+
+  
   // const handleRemove = async (itemId) => {
   //   try {
   //     await deleteItemById(itemId); // Call your API to delete item by ID
@@ -180,7 +197,9 @@ const Cart = ({ cart, setCart, handleChange, handleRemove, showModal, setShowMod
         selectedItems={selectedItems} 
         cart={cart} 
         totalPrice={selectedTotalPrice} 
-        onBack={() => setShowCheckout(false)} 
+        //onBack={() => setShowCheckout(false)} 
+        onBack={goBackToHome} 
+        onBackCart={goBackToCart}
       />
     );
   }
