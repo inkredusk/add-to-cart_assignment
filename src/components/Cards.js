@@ -1,27 +1,6 @@
 import React from 'react'
 import '../styles/cards.css'
 
-<<<<<<< Updated upstream
-const Cards = ({item, handleClick}) => {
-    const { name, price, img, stock } = item;
-
-    return (
-        <div className='cards'>
-            <div className='image_box'>
-                <img src={img} alt='Image' />
-            </div>
-            <div className='details'>
-                <p>{name}</p>
-                <p>M.R.P.: ₹{price}</p>
-                <p>Stock Quantity : {stock}</p>
-                <button onClick={()=> handleClick(item)}>Add to Cart</button>
-            </div>
-        </div>
-    )
-}
-
-export default Cards
-=======
 const Cards = ({ item, handleClick }) => {
   const { name, price, stock, images } = item;
   const imageUrl = images[0]?.imageUrl; // Accessing the imageUrl from the first element of the images array
@@ -50,4 +29,3 @@ const Cards = ({ item, handleClick }) => {
 };
 
 export default Cards;
->>>>>>> Stashed changes

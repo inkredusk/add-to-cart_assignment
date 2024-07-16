@@ -1,37 +1,51 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Adjust the base URL according to your backend's base URL
-const apiUrl = process.env.REACT_APP_API_BASE_URL;  
+const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
 const api = axios.create({
   baseURL: apiUrl,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 const getHeaders = () => {
-  // Construct your headers object here
   const headers = {
-    'Content-Type': 'application/json',
-    // Add any other headers you need here
+    "Content-Type": "application/json",
   };
 
   return headers;
 };
 
-export const genericApiCall = async (method, endpoint, data, params) => {
+export const genericApiCall = async (
+  method,
+  endpoint,
+  data = null,
+  params = null,
+  responseType = "json"
+) => {
   try {
-    const response = await api({
+    const config = {
       method: method,
       url: endpoint,
-      data: data,
-      params: params,
-      headers: getHeaders(),  // Use the getHeaders function here
-    });
+      headers: getHeaders(),
+      responseType: responseType, // Specify the response type
+    };
+
+    if (method.toLowerCase() === "get" && params) {
+      config.params = params;
+    } else if (method.toLowerCase() === "post" && data) {
+      config.data = data;
+    }
+
+    const response = await api(config);
     return response.data;
   } catch (error) {
-    console.error('API Error:', error.response ? error.response.data : error.message);
+    console.error(
+      "API Error:",
+      error.response ? error.response.data : error.message
+    );
     throw error;
   }
 };

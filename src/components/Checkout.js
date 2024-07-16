@@ -1,26 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import '../styles/checkout.css'; // Ensure you have the necessary CSS for styling
+import React, { useState, useEffect } from "react";
+import OrderConfirmation from "./OrderConfirmation";
+import { generatePdf } from "../api/endpoints"; // Adjust the import according to your file structure
+import "../styles/checkout.css"; // Ensure you have the necessary CSS for styling
 
-const Checkout = ({ selectedItems, cart, totalPrice, onBack }) => {
+const Checkout = ({ selectedItems, cart, totalPrice, onBackCart }) => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [selectedPayment, setSelectedPayment] = useState('credit');
+  const [selectedPayment, setSelectedPayment] = useState("credit");
   const [addressOpen, setAddressOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [itemsOpen, setItemsOpen] = useState(false);
-  const [purchaseFinalized, setPurchaseFinalized] = useState(false); // State to track purchase finalized
+  const [purchaseFinalized, setPurchaseFinalized] = useState(false);
+  const [agreeChecked, setAgreeChecked] = useState(false);
+  const [isPdfView, setIsPdfView] = useState(false); // State for PDF view
+  const [pdfUrl, setPdfUrl] = useState(""); // State for PDF URL
+  const [showConfirmation, setShowConfirmation] = useState(false); // State for showing confirmation
 
   const paymentOptions = [
-    { id: 'credit', label: 'Credit' },
-    { id: 'cod', label: 'Cash on Delivery' },
-    { id: 'upi', label: 'UPI' }
+    { id: "credit", label: "Credit" },
+    { id: "cod", label: "Cash on Delivery" },
+    { id: "upi", label: "UPI" },
   ];
 
   useEffect(() => {
-    // Simulate fetching addresses from an API or login information
     const fetchAddresses = async () => {
       try {
-        // Replace this with actual API call
+        // Simulated user addresses, replace with actual fetch logic
         const userAddresses = [
           {
             id: 1,
@@ -30,21 +35,11 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBack }) => {
             city: "Springfield",
             state: "IL",
             zipCode: "62704",
-            country: "USA"
+            country: "USA",
           },
-          {
-            id: 2,
-            fullName: "Jane Doe",
-            addressLine1: "456 Elm St",
-            addressLine2: "Suite 5A",
-            city: "Metropolis",
-            state: "NY",
-            zipCode: "10001",
-            country: "USA"
-          }
         ];
         setAddresses(userAddresses);
-        setSelectedAddress(userAddresses[0]?.id); // Select the first address by default
+        setSelectedAddress(userAddresses[0]?.id);
       } catch (error) {
         console.error("Error fetching addresses:", error);
       }
@@ -53,36 +48,71 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBack }) => {
     fetchAddresses();
   }, []);
 
-  const selectedCartItems = cart.filter(item => selectedItems.has(item.id));
+  const selectedCartItems = cart.filter((item) => selectedItems.has(item.id));
 
   const handleFinalizePurchase = async () => {
+    if (!agreeChecked) return;
+
     try {
-      // Simulate finalizing purchase with an API call
-      console.log("Simulating finalize purchase API call...");
-      // Instead of actual API call, set purchase finalized state
-      setPurchaseFinalized(true);
+      // Generate PDF with selected items
+      const blob = await generatePdf(selectedCartItems);
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url); // Save the PDF URL in state
+      setIsPdfView(true); // Show the PDF view
     } catch (error) {
       console.error("Error finalizing purchase:", error);
     }
   };
 
   const toggleSection = (section) => {
-    if (section === 'address') setAddressOpen(!addressOpen);
-    if (section === 'payment') setPaymentOpen(!paymentOpen);
-    if (section === 'items') setItemsOpen(!itemsOpen);
+    if (section === "address") setAddressOpen(!addressOpen);
+    if (section === "payment") setPaymentOpen(!paymentOpen);
+    if (section === "items") setItemsOpen(!itemsOpen);
   };
+
+  const handleContinueShopping = () => {
+    // Implement your logic for "Continue shopping" here
+    window.location.href = '/continue-shopping';
+  };
+
+  if (showConfirmation) {
+    // Render OrderConfirmation component
+    return <OrderConfirmation onContinueShopping={handleContinueShopping} />;
+  }
+
+  if (isPdfView) {
+    // Render PDF view
+    return (
+      <div className="pdf-view">
+        <div className="pdf-buttons">
+          <button id="printBtn" className="common_btn"  onClick={() => window.print()}>Print</button>
+          <button id="downloadBtn" className="common_btn" onClick={() => {
+            const a = document.createElement('a');
+            a.href = pdfUrl;
+            a.download = 'generated.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          }}>Download</button>
+          <button id="backToCheckoutBtn" className="common_btn" onClick={() => setIsPdfView(false)}>Back to Checkout</button>
+          <button id="confirmBtn" className="common_btn" onClick={() => setShowConfirmation(true)}>Confirm</button>
+        </div>
+        <embed src={pdfUrl} type="application/pdf" width="100%" height="100%" style={{ height: "100vh" }} />
+      </div>
+    );
+  }
 
   return (
     <div className="checkout-container">
-      <h2 className='heading'>Checkout</h2>
+      <h2>Checkout</h2>
       <div className="checkout-section">
-        <h3 onClick={() => toggleSection('address')}>1. Address</h3>
-        <div className={`address-info ${addressOpen ? 'open' : ''}`}>
+        <h3 onClick={() => toggleSection("address")}>1. Address</h3>
+        <div className={`address-info ${addressOpen ? "open" : ""}`}>
           {addresses.length === 0 ? (
             <p>Loading addresses...</p>
           ) : (
-            addresses.map(address => (
-              <div className='test' key={address.id}>
+            addresses.map((address) => (
+              <div key={address.id} className="test">
                 <input
                   type="radio"
                   id={`address-${address.id}`}
@@ -93,7 +123,9 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBack }) => {
                 />
                 <label htmlFor={`address-${address.id}`}>
                   <p>
-                    <span className='addName'>{address.fullName},</span> {address.addressLine1}, {address.addressLine2}, {address.city}, {address.state} {address.zipCode}, {address.country}
+                    {address.fullName}, {address.addressLine1},{" "}
+                    {address.addressLine2}, {address.city}, {address.state}{" "}
+                    {address.zipCode}, {address.country}
                   </p>
                 </label>
               </div>
@@ -102,10 +134,10 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBack }) => {
         </div>
       </div>
       <div className="checkout-section">
-        <h3 onClick={() => toggleSection('payment')}>2. Payment Gateway</h3>
-        <div className={`payment-info ${paymentOpen ? 'open' : ''}`}>
-          {paymentOptions.map(option => (
-            <div key={option.id}>
+        <h3 onClick={() => toggleSection("payment")}>2. Payment Gateway</h3>
+        <div className={`payment-info ${paymentOpen ? "open" : ""}`}>
+          {paymentOptions.map((option) => (
+            <div key={option.id} className="test">
               <input
                 type="radio"
                 id={option.id}
@@ -120,21 +152,31 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBack }) => {
         </div>
       </div>
       <div className="checkout-section">
-        <h3 onClick={() => toggleSection('items')}>3. Items and Delivery</h3>
-        <div className={`items-info ${itemsOpen ? 'open' : ''}`}>
+        <h3 onClick={() => toggleSection("items")}>3. Items and Delivery</h3>
+        <div className={`items-info ${itemsOpen ? "open" : ""}`}>
           {selectedCartItems.length === 0 ? (
             <p>No items selected for checkout.</p>
           ) : (
             <div>
               <ul>
-                {selectedCartItems.map(item => (
-                  <li key={item.id}>
-                    <img src={`http://localhost:8080/images/${item.img}`} alt={item.title} />
-                    <span>{item.product.name}</span>
-                    <span>Quantity: {item.quantity}</span>
-                    <span>Price: ₹{item.product.price}</span>
-                  </li>
-                ))}
+                {selectedCartItems.map((item) => {
+                  const imageUrl = item.product && item.product.images && item.product.images.length > 0 
+                    ? `http://localhost:8080/images/${item.product.images[0].imageUrl}` 
+                    : null;
+
+                  return (
+                    <li key={item.id}>
+                      {imageUrl ? (
+                        <img src={imageUrl} alt={item.product.name} />
+                      ) : (
+                        <div className="default-image">Image Missing</div>
+                      )}
+                      <span>{item.product.name}</span>
+                      <span>Quantity: {item.quantity}</span>
+                      <span>Price: ₹{item.product.price}</span>
+                    </li>
+                  );
+                })}
               </ul>
               <div className="checkout-total">
                 <span>Total Price: ₹{totalPrice}</span>
@@ -143,18 +185,26 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBack }) => {
           )}
         </div>
       </div>
-      <button className="back-button" onClick={onBack}>Back to Cart</button>
-      <button className="finalize-button" onClick={handleFinalizePurchase}>Finalize Purchase</button>
-
-      {purchaseFinalized && (
-        <div className="purchase-dialog">
-          <p>Order finalized successfully!</p>
-          <button onClick={() => {
-            setPurchaseFinalized(false);
-            onBack(); // Call onBack to go back to the cart page
-          }}>Back to Cart</button>
-        </div>
-      )}
+      <div className="agree-section">
+        <label>
+          <input
+            type="checkbox"
+            checked={agreeChecked}
+            onChange={(e) => setAgreeChecked(e.target.checked)}
+          />
+          <span>Agree and Continue</span>
+        </label>
+      </div>
+      <button className="back-button" onClick={onBackCart}>
+        Back to Cart
+      </button>
+      <button
+        className="finalize-button"
+        onClick={handleFinalizePurchase}
+        disabled={!agreeChecked}
+      >
+        Finalize Purchase
+      </button>
     </div>
   );
 };
