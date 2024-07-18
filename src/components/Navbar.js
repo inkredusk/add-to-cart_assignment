@@ -5,9 +5,11 @@ function Navbar({size, setShow}) {
     return (
         <nav>
             <div className='nav_box' >
-                <span className='my_shop' onClick={()=>setShow(true)}>
-                    My Shopping
-                </span>
+               <div className='cart' onClick={()=>setShow(true)}>
+                 <span className='my_shop'>
+                    <i className="fas fa-home"> My Shopping</i>
+                 </span>
+               </div>
 
                 <div className='cart' onClick={()=>setShow(false)}>
                     <span>
