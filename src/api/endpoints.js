@@ -28,9 +28,9 @@ export const removeFromCart = (cartId) =>
     cartId,
   });
 
-// export const generatePdf = () =>
-//   genericApiCall("get", "/generate-pdf", null, null, "blob");
-
 export const generatePdf = () =>
-  genericApiCall("get", process.env.REACT_APP_GENERATE_PDF, null, null, "blob");
+  genericApiCall("get", "/generate-pdf", null, null, "blob");
+
+// export const generatePdf = () =>
+//   genericApiCall("get", process.env.REACT_APP_GENERATE_PDF, null, null, "blob");
 
