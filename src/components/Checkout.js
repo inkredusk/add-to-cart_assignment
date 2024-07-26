@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import OrderConfirmation from "./OrderConfirmation";
-import { generatePdf } from "../api/endpoints"; // Adjust the import according to your file structure
+import {clearSelectedItems, generatePdf } from "../api/endpoints"; // Adjust the import according to your file structure
 import "../styles/checkout.css"; // Ensure you have the necessary CSS for styling
 
 const Checkout = ({ selectedItems, cart, totalPrice, onBackCart }) => {
@@ -52,7 +52,7 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBackCart }) => {
 
   const handleFinalizePurchase = async () => {
     if (!agreeChecked) return;
-
+  
     try {
       // Generate PDF with selected items
       const blob = await generatePdf(selectedCartItems);
@@ -80,12 +80,22 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBackCart }) => {
     return <OrderConfirmation onContinueShopping={handleContinueShopping} />;
   }
 
+  const confirmPurchase = async () => {
+    try {
+      const selectedCartItemIds = selectedCartItems.map(item => item.id);
+      await clearSelectedItems(selectedCartItemIds);
+      setShowConfirmation(true);
+    } catch (error) {
+      console.error("Error clearing selected cart items:", error);
+    }
+  };
+
   if (isPdfView) {
     // Render PDF view
     return (
       <div className="pdf-view">
         <div className="pdf-buttons">
-          <button id="printBtn" className="common_btn"  onClick={() => window.print()}>Print</button>
+          <button id="printBtn" className="common_btn" onClick={() => window.print()}>Print</button>
           <button id="downloadBtn" className="common_btn" onClick={() => {
             const a = document.createElement('a');
             a.href = pdfUrl;
@@ -95,12 +105,13 @@ const Checkout = ({ selectedItems, cart, totalPrice, onBackCart }) => {
             document.body.removeChild(a);
           }}>Download</button>
           <button id="backToCheckoutBtn" className="common_btn" onClick={() => setIsPdfView(false)}>Back to Checkout</button>
-          <button id="confirmBtn" className="common_btn" onClick={() => setShowConfirmation(true)}>Confirm</button>
+          <button id="confirmBtn" className="common_btn" onClick={confirmPurchase}>Confirm</button>
         </div>
         <embed src={pdfUrl} type="application/pdf" width="100%" height="100%" style={{ height: "100vh" }} />
       </div>
     );
   }
+  
 
   return (
     <div className="checkout-container">
