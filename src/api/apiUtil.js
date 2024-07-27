@@ -40,6 +40,7 @@ export const genericApiCall = async (
     }
 
     const response = await api(config);
+    console.log("response.....",response);
     return response.data;
   } catch (error) {
     console.error(

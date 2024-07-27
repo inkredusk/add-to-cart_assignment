@@ -40,3 +40,9 @@ export const generatePdf = (selectedCartItems) =>
 export const clearSelectedItems = (cartItemIds) =>
   genericApiCall("post", process.env.REACT_APP_SELECTED_ITEM_FROM_CART, cartItemIds);
 
+
+// export const saveUser = (firstName, lastName, address, email, mobileNo, userName, userPassword) => genericApiCall('post', process.env.REACT_APP_SAVE_USER, { firstName, lastName, address, email, mobileNo, userName, userPassword });
+export const signUp = (formData) => genericApiCall('post', process.env.REACT_APP_SIGN_UP, formData);
+export const signIn = (formData2) => genericApiCall('post', process.env.REACT_APP_SIGN_IN, formData2);
+export const logout = () => genericApiCall('post', process.env.REACT_APP_LOGOUT);
+  

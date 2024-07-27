@@ -3,7 +3,9 @@ import Amazon from './components/Amazon';
 import Cart from './components/Cart';
 import Navbar from './components/Navbar';
 import './App.css';
-import { addToCart, getAllCartItems, getTotalPrice, getTotalQuantity, updateCartQuantity, removeFromCart } from './api/endpoints';
+import RegistrationForm from './components/RegistrationForm';
+import Login from './components/Login';
+import { addToCart, getAllCartItems, getTotalPrice, getTotalQuantity, updateCartQuantity, removeFromCart, signUp, signIn } from './api/endpoints';
 
 function App() {
   const [show, setShow] = useState(true);
@@ -12,6 +14,10 @@ function App() {
   const [totalPrice, setTotalPrice] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);
+  const [showMainApp, setShowMainApp] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -43,9 +49,6 @@ function App() {
   };
 
   const handleChange = async (item, delta) => {
-  //  const updatedQuantity = item.quantity + delta;
-    //if (updatedQuantity < 1) return;
-
     try {
       await updateCartQuantity(item.id, delta);
       const cartItems = await getAllCartItems();
@@ -69,23 +72,80 @@ function App() {
     }
   };
 
+  const handleSubmit = async (formData) => {
+    try {
+      const response = await signUp(formData);
+      console.log('Registration successful', response);
+      setSuccessMessage('Registration successful. You can now log in.');
+      setShowRegistrationForm(true);
+      setTimeout(() => setSuccessMessage(''), 3000); // Clear success message after 3 seconds
+    } catch (error) {
+      console.error('Error registering user', error);
+      setModalMessage(error.message || 'Registration failed. Please try again.');
+      setShowModal(true);
+    }
+  };
+
+  const handleLogin = async (formData) => {
+    try {
+      const response = await signIn(formData);
+      if (response.message === "Invalid username/password") {
+        throw new Error(response.message);
+      }
+      setShowMainApp(true);
+      setShowLogin(false);
+      setShowRegistrationForm(false); // Ensure registration form is hidden
+      console.log('Login successful', response);
+    } catch (error) {
+      console.error('Error logging in', error);
+      throw new Error(error.message || 'Login failed. Please try again.');
+    }
+  };
+
+  const handleLogout = () => {
+    setShowLogin(true);
+    setShowMainApp(false);
+    setShowRegistrationForm(false); // Ensure registration form is hidden
+  };
+
   return (
     <React.Fragment>
-      <Navbar size={totalQuantity} setShow={setShow} />
-      {show ? (
-        <Amazon handleClick={handleClick} />
-      ) : (
-        <Cart
-          cart={cart}
-          setCart={setCart}
-          handleChange={handleChange}
-          handleRemove={handleRemove}
-          totalPrice={totalPrice}
-          showModal={showModal}
-          setShowModal={setShowModal}
-          modalMessage={modalMessage}
-          setModalMessage={setModalMessage}
+      {showLogin ? (
+        <Login
+          setShowRegistrationForm={setShowRegistrationForm}
+          setShowMainApp={setShowMainApp}
+          setShowLogin={setShowLogin}
+          handleLogin={handleLogin}
         />
+      ) : showRegistrationForm ? (
+        <RegistrationForm setShowLogin={setShowLogin} handleSubmit={handleSubmit} successMessage={successMessage} />
+      ) : showMainApp ? (
+        <>
+          <Navbar size={totalQuantity} setShow={setShow} setShowLogin={setShowLogin} handleLogout={handleLogout} />
+          {show ? (
+            <Amazon handleClick={handleClick} />
+          ) : (
+            <Cart
+              cart={cart}
+              setCart={setCart}
+              handleChange={handleChange}
+              handleRemove={handleRemove}
+              totalPrice={totalPrice}
+              showModal={showModal}
+              setShowModal={setShowModal}
+              modalMessage={modalMessage}
+              setModalMessage={setModalMessage}
+            />
+          )}
+        </>
+      ) : null}
+      {showModal && (
+        <div className='modal'>
+          <div className='modal_content'>
+            <p>{modalMessage}</p>
+            <button onClick={() => setShowModal(false)}>Close</button>
+          </div>
+        </div>
       )}
     </React.Fragment>
   );
