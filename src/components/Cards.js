@@ -2,12 +2,21 @@ import React from 'react';
 import '../styles/cards.css';
 
 const Cards = ({ item, handleClick }) => {
-  const { name, price, img, stock } = item;
+  const { name, price, stock, images } = item;
+  const imageUrl = images[0]?.imageUrl; // Accessing the imageUrl from the first element of the images array
+
+  // Console log to check item properties and imageUrl
+  console.log("Item:", item);
+  console.log("Image URL:", imageUrl);
 
   return (
     <div className='cards'>
       <div className='image_box'>
-        <img src={img} alt='Image' />
+        {imageUrl ? (
+          <img src={`http://localhost:8080/images/${imageUrl}`} alt={name} />
+        ) : (
+          <p>No image available</p>
+        )}
       </div>
       <div className='details'>
         <p>{name}</p>
